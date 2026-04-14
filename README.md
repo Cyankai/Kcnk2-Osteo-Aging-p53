@@ -1,6 +1,6 @@
-# Age-Induced p53 Accumulation Drives the Developmental Arrest of Kcnk2⁺ Cells
+# Trpv4 specifically inhibits p53-driven Dkk1 and Sost secretion in a novel Kcnk2+ osteolineage subpopulation to rejuvenate the aged osteo-brain axis
 
-This repository contains the **core computational pipelines and customized scripts** used for the downstream analysis in the manuscript:  *"[你的文章最终标题]"*
+This repository contains the **core computational pipelines and customized scripts** used for the downstream analysis in the manuscript:  *"Trpv4 specifically inhibits p53-driven Dkk1 and Sost secretion in a novel Kcnk2+ osteolineage subpopulation to rejuvenate the aged osteo-brain axis"*
 
 > **Note:** This repository focuses on the central analytical steps (e.g., developmental trajectory inference, deconvolution, and TF activity inference). Upstream data preprocessing (e.g., Linux-based alignment for scRNA-seq/scvelo) and basic visualization scripts for standard figures are not fully included to keep the repository streamlined.
 
