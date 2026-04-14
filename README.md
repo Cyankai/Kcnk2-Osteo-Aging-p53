@@ -6,7 +6,7 @@ This repository contains the **core computational pipelines and customized scrip
 
 ## 📊 Data Availability
 The raw and processed sequencing data used in this study have been deposited in the Gene Expression Omnibus (GEO) database:
-* **Integrated scRNA-seq dataset:** `GSEXXXXXX` (In-house) & `GSE145477` (Published)
+* **Integrated scRNA-seq dataset:** `GSE285020` & `GSE145477`
 * **Sp7 conditional knockout scRNA-seq dataset:** `GSE154719`
 * **Bulk RNA-seq dataset (Aging vs. Exercise):** `GSE285020` 
 
