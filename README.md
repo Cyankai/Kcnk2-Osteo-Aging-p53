@@ -1,15 +1,14 @@
 # Age-Induced p53 Accumulation Drives the Developmental Arrest of Kcnk2⁺ Cells
 
-This repository contains the **core computational pipelines and customized scripts** used for the downstream analysis in the manuscript:  
-*"[你的文章最终标题]"*
+This repository contains the **core computational pipelines and customized scripts** used for the downstream analysis in the manuscript:  *"[你的文章最终标题]"*
 
 > **Note:** This repository focuses on the central analytical steps (e.g., developmental trajectory inference, deconvolution, and TF activity inference). Upstream data preprocessing (e.g., Linux-based alignment for scRNA-seq/scvelo) and basic visualization scripts for standard figures are not fully included to keep the repository streamlined.
 
 ## 📊 Data Availability
 The raw and processed sequencing data used in this study have been deposited in the Gene Expression Omnibus (GEO) database:
-* **Integrated aging bone scRNA-seq dataset:** `GSEXXXXXX` (In-house) & `GSE145477` (Published)
-* **Sp7 conditional knockout dataset:** `GSE154719`
-* **Bulk RNA-seq dataset (Aging vs. Exercise):** `GSEXXXXXX` *(如果你的 Bulk RNA-seq 也是你们自己测的，记得加上这个)*
+* **Integrated scRNA-seq dataset:** `GSEXXXXXX` (In-house) & `GSE145477` (Published)
+* **Sp7 conditional knockout scRNA-seq dataset:** `GSE154719`
+* **Bulk RNA-seq dataset (Aging vs. Exercise):** `GSE285020` 
 
 ## 💻 System Requirements & Dependencies
 The downstream analyses were performed using **R (version 4.3.3)** and **Python 3** running under macOS Sonoma (14.7.3). 
@@ -21,8 +20,6 @@ The downstream analyses were performed using **R (version 4.3.3)** and **Python 
 * **Pathway & Enrichment:** `clusterProfiler` (v4.10.1), `enrichplot` (v1.22.0), `msigdbr` (v25.1.0)
 * **Data Manipulation & Viz:** `dplyr` (v1.1.4), `tidyr` (v1.3.1), `ggplot2` (v3.5.2), `clustree` (v0.5.1), `ggpubr` (v0.6.1), `patchwork` (v1.3.2)
 
-*(For a comprehensive list of all loaded namespace dependencies, please refer to the script comments or `sessionInfo` output).*
-
 ## 📁 Repository Structure
 * `/scripts`: Contains the main R and Python 3 scripts for the core analyses presented in the manuscript figures.
   * **01_Data_Integration** (e.g., Seurat processing, clustering)
@@ -33,8 +30,7 @@ The downstream analyses were performed using **R (version 4.3.3)** and **Python 
 ## 🚀 Usage Guide
 To reproduce the core analytical results:
 1. Download the processed count matrices and metadata from the respective GEO accessions.
-2. Place the downloaded `.rds` or `.h5ad` files into a local `/data` directory (not tracked in this repo due to size limits).
-3. Execute the scripts in the `/scripts` folder. Please ensure the input paths are correctly modified to match your local environment.
+2. Execute the scripts in the `/scripts` folder. Please ensure the input paths are correctly modified to match your local environment.
 
 ## 📄 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
