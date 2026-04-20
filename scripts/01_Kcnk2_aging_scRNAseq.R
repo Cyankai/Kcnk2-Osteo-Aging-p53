@@ -129,6 +129,7 @@ DotPlot(pbmc, features = unique(c( 'Aspn','Edil3','Tnn','Bglap2',"Pdzd2", 'Bglap
 DimPlot(pbmc,  label = T, pt.size = 0.7,label.size = 4,group.by = "cell_type",
         split.by= 'orig.ident')
 
+save(pbmc,data,tpms,file = '/Users/kenny/Desktop/pbmc_yours.RData')
 
 #### Total Expression of Wnt Antagonists (3M vs 16M) #######
 library(dplyr)
@@ -381,3 +382,54 @@ meta_data$celltype <- meta_data$cell_type
 write.csv(meta_data, 
           file = "3M_metadata.csv", 
           quote = FALSE)
+#### Pathway_Scores_All_Cells ####
+pathways_list <- list(
+  CaN_Pathway  = c("Ppp3ca", "Ppp3cb", "Ppp3r1", "Nfatc1", "Nfatc2"),
+  CaMK_Pathway = c("Camk1", "Camk2a", "Camk2b", "Camk2d", "Camk2g", "Camkk1", "Camkk2"),
+  PKC_Pathway  = c("Prkca", "Prkcb", "Prkcg", "Prkcd", "Prkce", "Prkcz"),
+  AMPK_Pathway = c("Prkaa1", "Prkaa2", "Prkab1", "Prkab2", "Prkag1")
+)
+
+# 过滤掉矩阵中不存在的基因以防报错
+valid_pathways <- lapply(pathways_list, function(genes) intersect(genes, rownames(pbmc)))
+pbmc <- AddModuleScore(pbmc, features = valid_pathways, name = "Target_Score_")
+
+# Seurat 默认会在名字后加 1, 2, 3, 4，我们将其重命名为直观的名称
+score_names <- c("CaN_Score", "CaMK_Score", "PKC_Score", "AMPK_Score")
+colnames(pbmc@meta.data)[(ncol(pbmc@meta.data) - 3) : ncol(pbmc@meta.data)] <- score_names
+# 建议在全数据集 pbmc 上直接创建新列，方便全局比较
+pbmc$Analysis_Group <- "Others" # 初始化
+
+# 定义逻辑：结合年龄 (orig.ident) 和 细胞类型 (cell_type)
+pbmc$Analysis_Group[pbmc$orig.ident == "3M" & pbmc$cell_type == "Kcnk2+Cell"] <- "3M_Kcnk2_Pos"
+pbmc$Analysis_Group[pbmc$orig.ident == "3M" & pbmc$cell_type != "Kcnk2+Cell"] <- "3M_Others"
+pbmc$Analysis_Group[pbmc$orig.ident == "16M" & pbmc$cell_type == "Kcnk2+Cell"] <- "16M_Kcnk2_Pos"
+pbmc$Analysis_Group[pbmc$orig.ident == "16M" & pbmc$cell_type != "Kcnk2+Cell"] <- "16M_Others"
+
+# 设置因子顺序
+pbmc$Analysis_Group <- factor(pbmc$Analysis_Group, 
+                              levels = c("3M_Others", "3M_Kcnk2_Pos", "16M_Others", "16M_Kcnk2_Pos"))
+# 1. 明确我们需要提取的列名
+# 包括：基础分组信息、Kcnk2表达量、以及四个通路的得分
+export_vars <- c("orig.ident",       # 年龄分组 (3M, 16M)
+                 "cell_type",        # 细胞类型亚群 (IMC, Kcnk2+Cell 等)
+                 "Analysis_Group",   # 我们刚才创建的 4 分组 (3M_Others, 3M_Kcnk2_Pos, 16M_Others, 16M_Kcnk2_Pos)
+                 "Kcnk2",            # Kcnk2 的原始表达量 (方便你在 GraphPad 里随时核对)
+                 "CaN_Score", 
+                 "CaMK_Score", 
+                 "PKC_Score", 
+                 "AMPK_Score")
+
+# 2. 使用 FetchData 提取这些列的所有细胞数据
+# FetchData 是 Seurat 提取数据的最安全方法，能确保基因表达和 metadata 完美对齐
+export_data <- FetchData(pbmc, vars = export_vars)
+
+# 3. (可选) 将行名（细胞的 Barcode）提取出来变成单独的一列
+export_data$Cell_Barcode <- rownames(export_data)
+# 调整列的顺序，把 Cell_Barcode 放到第一列
+export_data <- export_data[, c("Cell_Barcode", export_vars)]
+
+# 4. 导出为 CSV 文件
+# row.names = FALSE 因为我们已经把行名提取成了 Cell_Barcode 列
+write.csv(export_data, file = "/Users/kenny/Desktop/2025/运动/scRNA_seq/Qinlin_sc_data/
+          Pathway_Scores_All_Cells.csv", row.names = FALSE)
