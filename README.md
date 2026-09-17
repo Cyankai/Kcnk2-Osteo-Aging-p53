@@ -4,22 +4,22 @@ This repository contains the **core computational pipelines and customized scrip
 
 ## 🗂️ Repository Structure & Script Description
 The analysis workflow is divided into 8 core scripts. It is highly recommended to execute them in the numerical order provided below.
-## 🔬 Proteomics & Spatial Profiling
+🔬 Proteomics & Spatial Profiling
 * **01_MultiCellular_Secretome_Network.R**
 Constructs a topological multi-cellular secretome network based on human DIA proteomics. Quantifies the systemic clearance of circulating Wnt antagonists post-exercise.
 * **02_sost_distribution.R**
 Visualizes the spatial polarization and endosteal accumulation (Inner zone) of Sclerostin in the aged cortical bone using integrated scatter and raincloud plots.
-## 🧬 Single-Cell RNA-seq & Trajectory Analysis
+🧬 Single-Cell RNA-seq & Trajectory Analysis
 * **03_Kcnk2_aging_scRNAseq.R**
 The core scRNA-seq pipeline. Handles dataset integration (1M, 3M, 16M), precise identification of the IMC state, Monocle3 pseudotime trajectory mapping, and differential gene expression analysis.
 * **05_scVelo.py**
 Performs RNA velocity dynamics mapping based on spliced/unspliced kinetics to computationally validate the unidirectional osteogenic flow in young mice and the maturation arrest in aged mice.
-## 🧪 Bulk Deconvolution & Genetic Validation
+**🧪 Bulk Deconvolution & Genetic Validation**
 * **04_RNAseq_MuSiC.R**
 Executes bulk RNA-seq deconvolution (MuSiC) using the single-cell reference to infer IMC accumulation in intact tissues and computes lineage-normalized pathogenic burdens.
 * **06_Sp7_Knockout_Projection.R**
 Re-analyzes a public Sp7 conditional knockout (cKO) dataset. Uses anchor-based label transfer to validate lineage deviation and cell cycle arrest (G1/S/G2M) mirroring physiological aging.
-## 💻 In Silico Perturbation & Multi-species Integration
+**💻 In Silico Perturbation & Multi-species Integration**
 * **07_p53_scTenifoldKnk.R**
 Employs the scTenifoldKnk machine learning framework to execute an in silico virtual knockout of Trp53 within the aged IMC. Quantifies the structural shifts in the Gene Regulatory Network (GRN).
 * **08_HALL_Combined.R**
