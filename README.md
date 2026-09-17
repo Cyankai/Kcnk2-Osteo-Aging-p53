@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22804678.svg)](https://doi.org/10.5281/zenodo.22804678)
 # Trpv4 specifically inhibits p53-driven Dkk1 and Sost secretion in a novel Kcnk2+ osteolineage subpopulation to rejuvenate the aged osteo-brain axis
 
 This repository contains the **core computational pipelines and customized scripts** used for the downstream analysis in the manuscript:  *"Trpv4 specifically inhibits p53-driven Dkk1 and Sost secretion in a novel Kcnk2+ osteolineage subpopulation to rejuvenate the aged osteo-brain axis"*
