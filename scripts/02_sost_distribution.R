@@ -17,10 +17,8 @@ library(patchwork)
 
 # 全局经典配色 
 group_colors <- c("Young" = "#4DBBD5", "Old" = "#E64B35", "Exercise" = "#00A087")
-
-# ==============================================================================
-# 2. 统一数据源与动态划分区域 (基于 clean_data 自动生成所有指标)
-# ==============================================================================
+ 
+# 2. 统一数据源与动态划分区域 (基于 clean_data 自动生成所有指标) 
 # 假设您的 clean_data 包含: Group, Depth, Fluo
 
 filtered_data <- clean_data %>%
@@ -37,10 +35,8 @@ filtered_data <- clean_data %>%
     Group = factor(Group, levels = c("Young", "Old", "Exercise")),
     Zone = factor(Zone, levels = c("Inner", "Mid", "Outer")) # 保留您要求的雨云图从深到浅的排版
   )
-
-# ==============================================================================
-# 3. 动态计算散点图顶部的百分比标注
-# ==============================================================================
+ 
+# 3. 动态计算散点图顶部的百分比标注 
 anno_df <- filtered_data %>%
   group_by(Group, Zone) %>%
   summarise(Count = n(), .groups = "drop") %>%
@@ -57,10 +53,8 @@ anno_df <- filtered_data %>%
     ),
     Fluo = Inf # 让文字永远悬浮在最顶部
   )
-
-# ==============================================================================
-# 4. 绘制左侧：自带门控与动态定量标注的空间散点图
-# ==============================================================================
+ 
+# 4. 绘制左侧：自带门控与动态定量标注的空间散点图 
 p_scatter_final <- ggplot(filtered_data, aes(x = Depth, y = Fluo)) +
   
   geom_hline(yintercept = 1.0, linetype = "dotted", color = "gray30", linewidth = 0.8) +
@@ -92,10 +86,8 @@ p_scatter_final <- ggplot(filtered_data, aes(x = Depth, y = Fluo)) +
     axis.line = element_line(linewidth = 0.8),
     panel.border = element_rect(color = "black", fill = NA, linewidth = 1)
   )
-
-# ==============================================================================
-# 5. 绘制右侧：基于同一数据的空间分布雨云图
-# ==============================================================================
+ 
+# 5. 绘制右侧：基于同一数据的空间分布雨云图 
 # 动态计算每个提琴图底部的 n 值
 cell_counts <- filtered_data %>%
   group_by(Zone, Group) %>%
@@ -140,13 +132,23 @@ p_rain <- ggplot(filtered_data, aes(x = Group, y = Fluo, fill = Group, color = G
     panel.border = element_rect(color = "black", fill = NA, linewidth = 1)
   ) +
   coord_cartesian(clip = "off", ylim = c(min(filtered_data$Fluo)-0.2, max(filtered_data$Fluo)+0.4)) 
-
-# ==============================================================================
-# 6. 终极无缝拼图渲染
-# ==============================================================================
+ 
+# 6. 终极无缝拼图渲染 
 final_combined_plot <- p_scatter_final + p_rain + 
   plot_layout(widths = c(1, 1.1)) + 
   plot_annotation(tag_levels = 'A') & 
   theme(plot.tag = element_text(size = 20, face = "bold"))
 
 print(final_combined_plot)
+
+# 生成 Source Data ####
+target_dir <- "/users/kenny/Desktop/2025/运动/sub/re-sub/Table"
+
+df_source_sost_scatter <- filtered_data %>%
+  dplyr::select(Group, Cortical_Depth_Percent = Depth, Relative_Fluo_Intensity = Fluo, Zone) 
+
+df_source_sost_quant <- anno_df %>%
+  dplyr::select(Group, Zone, Cell_Count = Count, Total_Group_Cells = Total, Regional_Percentage = Percentage) 
+
+write.csv(df_source_sost_scatter, file = file.path(target_dir, "Source_Data_Sost_Distribution.csv"), row.names = FALSE)
+write.csv(df_source_sost_quant, file = file.path(target_dir, "Source_Data_Sost_Quantification.csv"), row.names = FALSE)

@@ -4,20 +4,15 @@
 #              (p53) using the scTenifoldKnk machine learning framework. Evaluates 
 #              the structural gene regulatory network (GRN) shifts and the rescue 
 #              of SASP and Wnt antagonists within the aged Kcnk2+ IMC subpopulation.
-# Input Data:  Sub-setted Seurat object of 16M Kcnk2+ cells.
-# Output:      'p53_ko_results.rds' (GRN adjacency matrices, manifold alignment).
-# ==============================================================================
-# =================================================================
-# 第一步：加载包 
-# =================================================================
+# Input Data:  Sub-setted Seurat object of 16M Kcnk2+ cells. 
+# ============================================================================= 
+# 第一步：加载包  
 library(Seurat)
 library(scTenifoldKnk) 
 library(dplyr)
 library(Matrix)
-
-# =================================================================
-# 第二步：安全的 Subsetting 操作与原始 Count 提取
-# =================================================================
+ 
+# 第二步：安全的 Subsetting 操作与原始 Count 提取 
 # 提取 16M 的 Kcnk2+ 衰老亚群
 kcnk2_aged_cells <- subset(pbmc, subset = orig.ident == "16M" & cell_type == "Kcnk2+Cell")
 
@@ -26,10 +21,8 @@ count_matrix <- LayerData(kcnk2_aged_cells, assay = "RNA", layer = "counts")
 
 # (如果是 Seurat v4，请换用下面这句：)
 # count_matrix <- GetAssayData(kcnk2_aged_cells, assay = "RNA", slot = "counts")
-
-# =================================================================
-# 第三步：加入“白名单”的基因过滤 (极为关键)
-# =================================================================
+ 
+# 第三步：加入“白名单”的基因过滤 (极为关键) 
 # 1. 明确我们需要重点关注的靶点 (敲除靶点 + 观察靶点)
 core_targets <- c("Trp53", "Dkk1", "Sost", "Limch1", "Kcnk2")
 
@@ -46,18 +39,14 @@ count_matrix_filtered <- count_matrix[expressed_genes, ]
 print(paste("过滤后剩余的基因数：", nrow(count_matrix_filtered)))
 print(paste("参与构建网络的细胞数：", ncol(count_matrix_filtered)))
 print(paste("成功强制保留的核心靶点数：", length(present_targets)))
-
-# =================================================================
-# 第四步：执行 p53 (Trp53) 虚拟敲除 (scTenifoldKnk)
-# =================================================================
+ 
+# 第四步：执行 p53 (Trp53) 虚拟敲除 (scTenifoldKnk) 
 set.seed(2026)
 p53_ko_results <- scTenifoldKnk(countMatrix = count_matrix_filtered, 
                                 gKO = "Trp53",     # 小鼠的 p53 基因名
                                 nc_nNet = 16)      # 线程数请根据你的服务器配置调整 (如 10 到 80)
-
-# =================================================================
-# 第五步：追踪目标标志物的因果逆转
-# =================================================================
+ 
+# 第五步：追踪目标标志物的因果逆转 
 # 智能提取差异表达表格
 if(is.data.frame(p53_ko_results)) {
   diff_reg <- p53_ko_results
@@ -104,3 +93,12 @@ diff_reg[diff_reg$gene %in% key_targets, ]
 # 筛选显著受扰动基因 (根据标准可设 p.adj < 0.05 或 Z > 1.96)
 sig_perturbed_genes <- diff_reg[diff_reg$p.adj < 0.05 & diff_reg$Z > 1.96, ]
 save(p53_ko_results, file='p53_ko_results.Rdata' )
+
+# Source Data ####
+target_dir <- "/users/kenny/Desktop/2025/运动/sub/re-sub/Table"
+
+
+df_source_tenifold <- diff_reg %>%
+  dplyr::select(Gene = gene, Regulatory_Distance = distance, Fold_Change = FC, P_Value = p.value, FDR = p.adj) 
+write.csv(df_source_tenifold, file = file.path(target_dir, "Source_Data_scTenifoldKnk_Trp53.csv"), row.names = FALSE)
+

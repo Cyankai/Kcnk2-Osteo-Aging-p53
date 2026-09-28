@@ -7,7 +7,7 @@
 # Input Data:  Public scRNA-seq object ('pbmc_public') and reference ('pbmc_yours').
 # Output:      Label transfer UMAPs, cell cycle distribution bar plots, and GO GSEA.
 # ==============================================================================
-#####  锚点投射 ####
+# 锚点投射 ####
 library(Seurat)
 library(ggplot2)
 
@@ -43,14 +43,14 @@ predictions <- TransferData(
 pbmc_public <- AddMetaData(pbmc_public, metadata = predictions)
 
 # 检查原作者的分类里，到底有多少细胞被识别成了你的 IMC
-table(Original = pbmc_public$cell_type, Predicted = pbmc_public$predicted.id)
+table(Original = pbmc_yours$cell_type, Predicted = pbmc_public$predicted.id)
 
 # 7. 可视化：看看这些被“抢出来”的 IMC 细胞分布在哪里
-DimPlot(pbmc_public, group.by = "predicted.id", label = TRUE,split.by = "orig.ident", cols = custom_colors) + 
+DimPlot(pbmc_public, group.by = "predicted.id", label = TRUE,split.by = "orig.ident" ) + 
   ggtitle("Predicted Identities in Sp7 KO Data")
 
 
-##### Lineage Deviation: Massive Expansion of IMCs in Sp7 KO #####
+# Lineage Deviation: Massive Expansion of IMCs in Sp7 KO #####
 library(dplyr)
 
 meta_public <- pbmc_public@meta.data
@@ -70,19 +70,32 @@ ggplot(prop_data, aes(x = orig.ident, y = Proportion, fill = predicted.id)) +
   theme(plot.title = element_text(face = "bold", hjust = 0.5))
 
 
-######  Ectopic Antagonist Surge Upon Sp7 Ablation ####
+# Ectopic Antagonist Surge Upon Sp7 Ablation ####
 library(tidyr)
 
 genes_to_plot <- c("Dkk1", "Sost") 
-expr_sp7 <- FetchData(pbmc_public, vars = c(genes_to_plot, "orig.ident", "predicted.id"))
-colnames(expr_sp7)[3] <- "cell_type" 
-target_cells <- c("LMP", "IMC", "Osteoblast", "Osteocyte")
-expr_sp7 <- expr_sp7 %>% filter(cell_type %in% target_cells)
+target_cells <- c("LMP", "IMC", "Osteoblast", "Osteocyte") 
+cluster_col <- if ("predicted.id" %in% colnames(pbmc_public@meta.data)) {
+  "predicted.id"
+} else if ("cell_type" %in% colnames(pbmc_public@meta.data)) {
+  "cell_type"
+} else {
+  stop("未在 pbmc_public@meta.data 中找到预测亚群列，请先核对列名！")
+}
+# 1. 提取数据
+expr_sp7 <- FetchData(pbmc_public, vars = genes_to_plot)
+expr_sp7$orig.ident <- pbmc_public$orig.ident 
+expr_sp7$cell_type  <- pbmc_public@meta.data[[cluster_col]]
 
+# 2. 过滤目标亚群
+expr_sp7 <- expr_sp7 %>%
+  filter(cell_type %in% target_cells)
+
+# 3. 统计各组各亚群总表达量并转换为长数据
 summary_sp7 <- expr_sp7 %>%
-  group_by(orig.ident, cell_type) %>%
-  summarise(across(all_of(genes_to_plot), sum), .groups = "drop") %>%
-  pivot_longer(cols = all_of(genes_to_plot), names_to = "Gene", values_to = "Expression")
+  group_by(orig.ident, cell_type) %>% 
+summarise(across(all_of(genes_to_plot), sum), .groups = "drop") %>% 
+pivot_longer(cols = all_of(genes_to_plot), names_to = "Gene", values_to = "Expression") 
 
 delta_labels_sp7 <- summary_sp7 %>%
   pivot_wider(names_from = orig.ident, values_from = Expression) %>%
@@ -115,7 +128,7 @@ ggplot(summary_sp7, aes(x = cell_type, y = Expression, fill = orig.ident)) +
   )
 
 
-#########  Cell Cycle Arrest Induced by Sp7 Ablation  #####
+# Cell Cycle Arrest Induced by Sp7 Ablation  #####
 library(stringr)
 
 s.genes.mouse <- str_to_title(cc.genes$s.genes)
@@ -163,7 +176,7 @@ ggplot(cc_sp7_summary, aes(x = cell_type, y = Proportion, fill = Phase)) +
   )
 
 
-###### Sp7 GO #####  
+# Sp7 GO #####  
 library(clusterProfiler)
 library(org.Mm.eg.db)
 
@@ -223,3 +236,12 @@ ggplot(mito_terms, aes(x = minus_NES, y = Description)) +
     panel.grid.major = element_line(color = "gray90"),
     panel.border = element_rect(color = "black", linewidth = 1)
   )
+
+# Source Data ####
+target_dir <- "/users/kenny/Desktop/2025/运动/sub/re-sub/Table"
+
+write.csv(prop_data, file = file.path(target_dir, "Source_Data_Sp7_Lineage_Proportions.csv"), row.names = FALSE)
+
+write.csv(summary_sp7, file = file.path(target_dir, "Source_Data_Sp7_Antagonist_Surge.csv"), row.names = FALSE)
+
+write.csv(cc_sp7_summary, file = file.path(target_dir, "Source_Data_Sp7_Cell_Cycle_Arrest.csv"), row.names = FALSE)

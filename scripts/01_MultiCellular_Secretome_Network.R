@@ -8,10 +8,8 @@
 #              and 'p_value_matrix' (Significance matrix).
 # Output:      A topological network plot highlighting spatial and functional niches.
 # ==============================================================================
-
-# ------------------------------------------------------------------------------
-# 1. 加载必备包
-# ------------------------------------------------------------------------------
+ 
+# 1. 加载必备包 
 suppressPackageStartupMessages({
   library(igraph)
   library(ggraph)
@@ -21,10 +19,8 @@ suppressPackageStartupMessages({
   library(ggforce)
   library(ggnewscale)
 })
-
-# ------------------------------------------------------------------------------
-# 2. 从 pro_data 中动态计算“运动引起的增减比例 (Log2FC)”
-# ------------------------------------------------------------------------------
+ 
+# 2. 从 pro_data 中动态计算“运动引起的增减比例 (Log2FC)” 
 # 假设 pro_data 已在环境中，且列名 'A' 开头代表基线，'B' 开头代表运动后
 cols_A <- grep("^A", colnames(pro_data), value = TRUE)
 cols_B <- grep("^B", colnames(pro_data), value = TRUE)
@@ -43,10 +39,8 @@ val_df <- data.frame(
   Log2FC = gene_log2fc,
   stringsAsFactors = FALSE
 )
-
-# ------------------------------------------------------------------------------
-# 3. 动态提取相关性连线 (Edges)
-# ------------------------------------------------------------------------------
+ 
+# 3. 动态提取相关性连线 (Edges) 
 # 提取 25 个核心靶点列表
 core_genes <- c("SOST", "DKK1", "SERPINE2", "CXCL12", "ACP5", "CST3", 
                 "COL1A1", "COMP", "CLEC11A", "STC2", "COL1A2", "OMD", 
@@ -69,10 +63,8 @@ edges_df <- data.frame(
     weight = abs(r_value),
     Direction = ifelse(r_value > 0, "Positive", "Negative")
   )
-
-# ------------------------------------------------------------------------------
-# 4. 组装节点信息 (Nodes) 与单细胞拓扑领地
-# ------------------------------------------------------------------------------
+ 
+# 4. 组装节点信息 (Nodes) 与单细胞拓扑领地 
 nodes_df <- data.frame(name = core_genes) %>%
   left_join(val_df, by = "name") %>%
   mutate(
@@ -89,10 +81,8 @@ nodes_df <- data.frame(name = core_genes) %>%
     # 生成带有数值标签的完美文本格式 (例如：SOST\n-3.12)
     label_text = sprintf("%s\n%.2f", name, Log2FC)
   )
-
-# ------------------------------------------------------------------------------
-# 5. 构建网络与精准坐标映射 (保证排版永不重叠)
-# ------------------------------------------------------------------------------
+ 
+# 5. 构建网络与精准坐标映射 (保证排版永不重叠) 
 g <- tbl_graph(nodes = nodes_df, edges = edges_df, directed = FALSE) %>%
   mutate(Degree = centrality_degree())
 
@@ -111,10 +101,8 @@ layout_data$y <- coords_df$custom_y[match(layout_data$name, coords_df$name)]
 
 distinct_cell_colors <- c("Osteocyte" = "#D62728", "Osteoblast & Matrix" = "#2CA02C", 
                           "Chondrocyte" = "#1F77B4", "BMSC" = "#9467BD", "Osteoclast" = "#FF7F0E")
-
-# ------------------------------------------------------------------------------
-# 6. 图表渲染 (渐变色映射 + 真实数值双行标签)
-# ------------------------------------------------------------------------------
+ 
+# 6. 图表渲染 (渐变色映射 + 真实数值双行标签) 
 p_final <- ggraph(layout_data) +
   
   # 图层 1：单细胞来源领地 (背景)
@@ -152,3 +140,17 @@ p_final <- ggraph(layout_data) +
 
 # 输出高清成果图
 print(p_final)
+# 生成 Source Data ####
+target_dir <- "/users/kenny/Desktop/2025/运动/sub/re-sub/Table"
+
+df_source_net_nodes <- nodes_df %>%
+select(Gene = name, Log2FC, CellType) 
+
+df_source_net_edges <- edges_df %>%
+select(Node_A = from, Node_B = to, Pearson_r = r_value, Direction, Edge_Weight = weight) 
+
+write.csv(df_source_net_nodes, file = file.path(target_dir, "Source_Data_Secretome_Nodes.csv"), row.names = FALSE)
+write.csv(df_source_net_edges, file = file.path(target_dir, "Source_Data_Secretome_Edges.csv"), row.names = FALSE)
+write.csv(cor_matrix, file = file.path(target_dir, "Source_Data_cor_matrix.csv"), row.names = FALSE)
+write.csv(p_value_matrix, file = file.path(target_dir, "Source_Data_p_value_matrix.csv"), row.names = FALSE)
+write.csv(pro_data, file = file.path(target_dir, "Source_Data_pro_data.csv"), row.names = FALSE)

@@ -8,7 +8,7 @@
 # Input Data:  Raw count matrices (1M, 3M, 16M WT samples).
 # Output:      Seurat objects, UMAP embeddings, Monocle3 trajectories, and DEGs.
 # ==============================================================================
-#### 16M clusters annotation ####
+# 16M clusters annotation ####
 library(Seurat)
 library(ggplot2)
 library(dplyr)
@@ -143,7 +143,7 @@ DimPlot(pbmc,  label = T, pt.size = 0.7,label.size = 4,group.by = "cell_type",
 
 save(pbmc,file = '/Users/kenny/Desktop/pbmc_yours.RData')
 
-#### Total Expression of Wnt Antagonists (3M vs 16M) #######
+# Total Expression of Wnt Antagonists (3M vs 16M) #######
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -209,7 +209,7 @@ ggplot(summary_long, aes(x = cell_type, y = Expression, fill = orig.ident)) +
     legend.title = element_text(face = "bold")
   ) 
 
-#### Monocle3 ####
+# Monocle3 ####
 library(Seurat) 
 library(monocle3)
 library(v16Midis)
@@ -261,7 +261,7 @@ root_cells <- colnames(cds)[cds$seurat_clusters == "1"]  # 假设簇1为起点
 cds <- order_cells(cds, root_cells = root_cells)
 pseudotime_values <- pseudotime(cds)
 pbmc$pseudotime <- pseudotime_values  # 存回Seurat对象
-#### Differentiation Trajectory  ####
+# Differentiation Trajectory  ####
 library(ggplot2)
 library(ggridges)
 
@@ -337,7 +337,7 @@ gene_modules <- find_gene_modules(cds[significant_genes,], resolution=1e-2)
 plot_cells(cds, genes=gene_modules, color_cells_by="cluster")
 
 
-#### 细胞比例变化 ####
+# 细胞比例变化 ####
 ggplot(pbmc@meta.data, aes(x = orig.ident, fill = cell_type)) +
   # position = "fill" 是自动计算百分比比例的核心
   geom_bar(position = "fill", width = 0.5, color = "black", size = 0.5) +
@@ -363,7 +363,7 @@ ggplot(pbmc@meta.data, aes(x = orig.ident, fill = cell_type)) +
     legend.text = element_text(size = 11)
   )
 
-#### 抗凋亡评分 ####
+# 抗凋亡评分 ####
 library(ggplot2)
 library(dplyr)
 
@@ -383,7 +383,7 @@ VlnPlot(pbmc, features = "Anti_Apoptotic_Score1",
   labs(title = "Anti-Apoptotic Signature in Aging", x = "Osteogenic Trajectory", y = "Score") +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
-#### export for scvelo analysis ####
+# export for scvelo analysis ####
 library(Seurat)
 # 1. 提取 3M 样本的独立 Seurat 对象
 # (假设你之前整合的大对象叫 pbmc，如果已经拆分请忽略这步)
@@ -399,39 +399,43 @@ meta_data$celltype <- meta_data$cell_type
 write.csv(meta_data, 
           file = "3M_metadata.csv", 
           quote = FALSE)
-#### 16m Kcnk2 亚群差异基因  ####
+# 16m Kcnk2 亚群差异基因  ####
 library(Seurat)
 library(ggplot2)
 library(dplyr)
 library(ggrepel)
 
-# 1. 数据集准备与分组 (Data Preparation) 
-# 确保使用 RNA assay 并合并 Layer (Seurat V5 标准操作)
+# 1. 切换 Assay 并合并图层
 DefaultAssay(pbmc) <- "RNA"
 pbmc <- JoinLayers(pbmc)
 
-# 提取 16M 的细胞 (假设你的年龄信息存在 orig.ident 或 age 列中)
-# 如果 imc_subset 已经是纯 16M 的数据，这行可以跳过
+# 2. 提取 16M 年龄组细胞
 seurat_16m <- subset(pbmc, subset = orig.ident == "16M")
 
-# 创建一个新的 Metadata 列，将细胞严格划分为 Kcnk2_pos 和 Kcnk2_neg
-# 假设亚群名称存在 cell_type 列中
-seurat_16m$volcano_group <- ifelse(seurat_16m$cell_type == "IMC", "Kcnk2_pos", "Kcnk2_neg")
+# 3. 创建二分类标签 (兼容 "Kcnk2+Cell" 与 "IMC" 命名)
+seurat_16m$volcano_group <- ifelse(
+  seurat_16m$cell_type %in% c("Kcnk2+Cell", "IMC"), 
+  "Kcnk2_pos", 
+  "Kcnk2_neg"
+)
 
-# 将分组设为默认身份
-# 1. 确保在 RNA 模式下，并合并子集可能断开的图层
+# 4. 确保 Assay 与标准化数据完整
 DefaultAssay(seurat_16m) <- "RNA"
 seurat_16m <- JoinLayers(seurat_16m)
-
-# 2. 【核心修复步】：执行基础 Log 标准化，强制生成完整的 'data' 图层！
 seurat_16m <- NormalizeData(seurat_16m)
 
-# 3. 再次运行找差异基因的代码（这次一定能顺利跑通）
-deg_results <- FindMarkers(seurat_16m, 
-                           ident.1 = "Kcnk2_pos", 
-                           ident.2 = "Kcnk2_neg", 
-                           logfc.threshold = 0.25, 
-                           min.pct = 0.1)
+# 5. 【关键修复步】：将默认 Idents 设为 volcano_group，或在 FindMarkers 里显式传 group.by
+Idents(seurat_16m) <- "volcano_group"
+
+# 6. 计算差异表达基因
+deg_results <- FindMarkers(
+  seurat_16m, 
+  ident.1 = "Kcnk2_pos", 
+  ident.2 = "Kcnk2_neg", 
+  group.by = "volcano_group",   # 显式指定分组列，防止 Idents 错配
+  logfc.threshold = 0.25, 
+  min.pct = 0.1
+)
 
 # 查看一下算出来的结果（前几行）
 head(deg_results)
@@ -508,7 +512,7 @@ ggplot(deg_results, aes(x = avg_log2FC, y = -log10(p_val_adj), color = Significa
   )
 
 
-##### 富集“蓝色”基因 ####
+# 富集“蓝色”基因 ####
 # 0. 加载富集分析专用包 
 library(clusterProfiler)
 library(org.Mm.eg.db) # 小鼠基因注释数据库
@@ -574,5 +578,25 @@ deg_export$Gene <- rownames(deg_export)
 # 调整列的顺序，把 Gene 放在第一列，看起来更专业
 deg_export <- deg_export[, c("Gene", "p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj", "Significance")]
 
-# 导出为 CSV 文件，可以直接用 Excel 打开并作为 Supplementary Table 提交
-write.csv(deg_export, file = "/Users/kenny/Desktop/2025/运动/sub/re-sub/Table/Supplementary_Table_Kcnk2_DEGs.csv", row.names = FALSE, quote = FALSE)
+# 生成 Source Data ####
+target_dir <- "/users/kenny/Desktop/2025/运动/sub/re-sub/Table"
+
+df_source_antagonist <- summary_long  %>%
+select(Age_Group = orig.ident, Cell_Type = cell_type, Gene, Total_Expression = Expression) 
+write.csv(df_source_antagonist, file = file.path(target_dir, "Source_Data_Wnt_Antagonist_Burden.csv"), row.names = FALSE)
+
+df_source_ridge <- plot_data  %>%
+select(Cell_Type = cell_type, Pseudotime = pseudotime) 
+write.csv(df_source_ridge, file = file.path(target_dir, "Source_Data_Pseudotime_Trajectory.csv"), row.names = FALSE)
+
+df_source_prop <- pbmc@meta.data  %>%
+group_by(orig.ident, cell_type)  %>%
+summarise(Cell_Count = n(), .groups = "drop")  %>%
+group_by(orig.ident)  %>%
+mutate(Proportion = Cell_Count / sum(Cell_Count))
+write.csv(df_source_prop, file = file.path(target_dir, "Source_Data_Lineage_Proportion_Shift.csv"), row.names = FALSE)
+
+df_source_volcano <- deg_results %>%
+select(Gene = gene, avg_log2FC, p_val, p_val_adj, Significance) 
+write.csv(df_source_volcano, file = file.path(target_dir, "Source_Data_Kcnk2_DEGs_Volcano.csv"), row.names = FALSE)
+

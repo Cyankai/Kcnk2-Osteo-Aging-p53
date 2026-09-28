@@ -8,7 +8,7 @@
 # Input Data:  'TPM_value' (Bulk RNA-seq matrix), 'pbmc' (scRNA-seq Seurat object).
 # Output:      Deconvolution proportions, normalized correlation plots, quadrant plots.
 # ==============================================================================
-######  MuSiC 反卷积算法  #####
+# MuSiC 反卷积算法  #####
 # 1. 加载必要的包
 library(Seurat)
 library(MuSiC)
@@ -59,10 +59,8 @@ df_plot$Sample <- rownames(df_plot)
 
 # 3. 提取分组信息 (Group)。
 df_plot$Group <- gsub(".TPM*", "", df_plot$Sample) 
-
-
-
-#######  IMC_Only_Exact_Pvalue ######
+ 
+# IMC_Only_Exact_Pvalue ######
 
 # 1. 专门提取 IMC 数据
 df_imc <- df_plot %>% select(Sample, Group, Proportion = IMC)
@@ -86,7 +84,7 @@ ggsave("IMC_Only_Exact_Pvalue.pdf", plot = p_imc, width = 4, height = 5)
 print(p_imc)
 
 
-####### Ref的选择 #####
+# Ref的选择 #####
 
 DefaultAssay(pbmc) <- "RNA" # 切换到原始表达 Assay
 
@@ -112,7 +110,7 @@ ggsave("Col1a1_Reference_Validation.pdf", plot = final_validation_plot, width = 
 print(final_validation_plot)
 
 
-######### Lineage-Normalized Pathogenic Burden #########
+# Lineage-Normalized Pathogenic Burden #########
 
 print("🌟 步骤 1: 选取靶标基因与内参基因")
 target_genes <- c("Dkk1", "Sost", "Kcnk2", "Enpp1")
@@ -159,7 +157,7 @@ ggsave("Normalized_IMC_Correlation.pdf", plot = p_corr_norm, width = 10, height 
 print(p_corr_norm)
 
 
-######  Z-score 靶基因集打分法量化 p53 活性联合分析  #####
+# Z-score 靶基因集打分法量化 p53 活性联合分析  #####
 
 print("🌟 步骤 1: 提取参考基因 (Col1a1) 并进行相对定量校准")
 col1a1_expr <- as.numeric(bulk_matrix["Col1a1", ]) + 1e-6
@@ -210,11 +208,9 @@ plot_box_norm <- function(y_var, y_label, title) {
 b1_norm <- plot_box_norm("p53_Activity_Norm", "Col1a1-Normalized Score", "p53 Pathway Activity")
 b2_norm <- plot_box_norm("IMC_Proportion", "Estimated Proportion", "IMC (Kcnk2+) Accumulation")
 box_plot_final <- (b1_norm | b2_norm) 
-print(box_plot_final)
-
-ggsave("Bulk_Validation_Boxplots_Normalized.pdf", box_plot_final, width = 10, height = 8)
+print(box_plot_final) 
  
-######  Tp53 逆转象限图  ###### 
+# Tp53 逆转象限图  ###### 
 
 # 1. 构建 Bulk 的 Metadata（给 p53 Z-score 那块用）
 metadata <- data.frame(
@@ -295,3 +291,19 @@ final_plot_spaced <- ggplot(act_diff_z_clean, aes(x = Delta_Aging, y = Delta_Exe
 
 print(final_plot_spaced)
 ggsave("Tp53_Reversal_Quadrant_Plot.pdf", final_plot_spaced, width = 10, height = 8)
+
+# Source Data ####
+target_dir <- "/users/kenny/Desktop/2025/运动/sub/re-sub/Table"
+
+write.csv(df_imc, file = file.path(target_dir, "Source_Data_MuSiC_IMC_Proportion.csv"), row.names = FALSE)
+
+df_source_burden_corr <- corr_long_norm %>%
+select(Sample, Group, Inferred_IMC_Proportion = IMC, Target_Gene = Gene, Normalized_Expression = Norm_Expression) 
+write.csv(df_source_burden_corr, file = file.path(target_dir, "Source_Data_Normalized_IMC_Correlation.csv"), row.names = FALSE)
+
+write.csv(df_analysis_norm, file = file.path(target_dir, "Source_Data_Bulk_p53_Activity_IMC.csv"), row.names = FALSE)
+
+df_source_tf_quadrant <- act_diff_z_clean %>%
+select(TF, Delta_Aging, Delta_Exercise, Target_Quadrant = Quadrant, Highlight_Label = Label) 
+write.csv(df_source_tf_quadrant, file = file.path(target_dir, "Source_Data_TF_Reversal_Quadrant.csv"), row.names = FALSE)
+

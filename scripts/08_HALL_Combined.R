@@ -79,3 +79,11 @@ ggplot(plot_df, aes(x = Log2FC_Mouse_Ex, y = Log2FC_Human_Ex, color = Target_Cla
   labs(x = "Log2 Fold Change (Mouse Exercise)",
        y = "Log2 Fold Change (Human Exercise)",
        title = "Translational Concordance of Bone-Derived Factors")
+
+# Source Data ####
+target_dir <- "/users/kenny/Desktop/2025/运动/sub/re-sub/Table"
+
+df_source_hall <- plot_df %>%
+  dplyr::select(Gene_Symbol, Log2FC_Mouse_Ex, Pval_Mouse_Ex, Log2FC_Human_Ex, Pval_Human_Ex, Target_Class)
+write.csv(df_source_hall, file = file.path(target_dir, "Source_Data_CrossSpecies_Concordance.csv"), row.names = FALSE)
+
