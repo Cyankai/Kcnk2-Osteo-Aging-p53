@@ -25,6 +25,8 @@ Re-analyzes a public Sp7 conditional knockout (cKO) dataset. Uses anchor-based l
 Employs the scTenifoldKnk machine learning framework to execute an in silico virtual knockout of Trp53 within the aged IMC. Quantifies the structural shifts in the Gene Regulatory Network (GRN).
  * **08_HALL_Combined.R**
 Integrates transcriptomic signatures across human and murine exercise cohorts, identifying evolutionarily conserved targeted pathways via four-quadrant concordance analysis.
+* **09_p53_Regulatory_Enrichment.R**
+Evaluates the lineage-specific recruitment and direct regulatory occupancy of p53 across the osteogenic trajectory. Performs genome-wide hypergeometric enrichment testing across differentiation stages (OB, IMC, Ot) and visualizes stage-selective promoter targeting via lineage-resolved lollipop and enrichment column plots.
 
 ## 📊 Data Availability
 The raw and processed sequencing data used in this study have been deposited in the Gene Expression Omnibus (GEO) database:
