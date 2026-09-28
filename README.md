@@ -1,7 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23007500.svg)](https://doi.org/10.5281/zenodo.23007500)
-# Activating TRPV4 in Kcnk2⁺ osteocytes dismantles p53-driven pathogenic secretome to rejuvenate the aging osteo-brain axis
 
-This repository contains the **core computational pipelines and customized scripts** used for the downstream analysis in the manuscript:  *"Trpv4 specifically inhibits p53-driven Dkk1 and Sost secretion in a novel Kcnk2+ osteolineage subpopulation to rejuvenate the aged osteo-brain axis"*
+This repository contains the **core computational pipelines and customized scripts** used for the downstream analysis in the manuscript:  *Activating TRPV4 in Kcnk2⁺ osteocytes dismantles p53-driven pathogenic secretome to rejuvenate the aging osteo-brain axis*
 
 ## 🗂️ Repository Structure & Script Description
 The analysis workflow is divided into 8 core scripts. It is highly recommended to execute them in the numerical order provided below.
