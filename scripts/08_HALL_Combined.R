@@ -24,47 +24,47 @@ library(tidyr)
 #   - "S vs O": Treadmill Running (Exercise) vs Sedentary Old control
 #   - "GSK vs Veh": TRPV4 agonist intervention vs Vehicle-treated control
 
-df_oy_up    <- gsea_report_for_na_pos_1720664519716 %>% mutate(Comparison = "O vs Y")[cite: 5]
-df_oy_down  <- gsea_report_for_na_neg_1720664519716 %>% mutate(Comparison = "O vs Y")[cite: 5]
-df_so_up    <- gsea_report_for_na_pos_1720665223327 %>% mutate(Comparison = "S vs O")[cite: 5]
-df_so_down  <- gsea_report_for_na_neg_1720665223327 %>% mutate(Comparison = "S vs O")[cite: 5]
-df_gsk_up   <- gsea_report_for_na_pos_1782893335594 %>% mutate(Comparison = "GSK vs Veh")[cite: 5]
-df_gsk_down <- gsea_report_for_na_neg_1782893335594 %>% mutate(Comparison = "GSK vs Veh")[cite: 5]
+df_oy_up    <- gsea_report_for_na_pos_1720664519716 %>% mutate(Comparison = "O vs Y")
+df_oy_down  <- gsea_report_for_na_neg_1720664519716 %>% mutate(Comparison = "O vs Y")
+df_so_up    <- gsea_report_for_na_pos_1720665223327 %>% mutate(Comparison = "S vs O")
+df_so_down  <- gsea_report_for_na_neg_1720665223327 %>% mutate(Comparison = "S vs O")
+df_gsk_up   <- gsea_report_for_na_pos_1782893335594 %>% mutate(Comparison = "GSK vs Veh")
+df_gsk_down <- gsea_report_for_na_neg_1782893335594 %>% mutate(Comparison = "GSK vs Veh")
 
 # Concatenate all directional comparison subsets into a unified master frame
-gsea_combined <- bind_rows(df_oy_up, df_oy_down, df_so_up, df_so_down, df_gsk_up, df_gsk_down)[cite: 5]
+gsea_combined <- bind_rows(df_oy_up, df_oy_down, df_so_up, df_so_down, df_gsk_up, df_gsk_down)
  
 # 2. Data Curation and Factor Level Serialization 
 plot_data <- gsea_combined %>%
   # Strip redundant prefixes to enhance gene set readability on Y-axis
-  mutate(Pathway = str_replace(NAME, "HALLMARK_", "")) %>%[cite: 5]
+  mutate(Pathway = str_replace(NAME, "HALLMARK_", "")) %>%
 # Calculate -log10 FDR q-value for geometric point size mapping (pseudo-count 1e-5 avoids Inf)
-mutate(Neg_Log_FDR = -log10(FDR.q.val + 1e-5)) %>%[cite: 5]
+mutate(Neg_Log_FDR = -log10(FDR.q.val + 1e-5)) %>%
 # Enforce biological and intervention progression across X-axis
-mutate(Comparison = factor(Comparison, levels = c("O vs Y", "S vs O", "GSK vs Veh")))[cite: 5]
+mutate(Comparison = factor(Comparison, levels = c("O vs Y", "S vs O", "GSK vs Veh")))
 
 # Dynamically rank pathways along Y-axis based on their NES in physiological aging (O vs Y)
 pathway_order <- plot_data %>% 
   filter(Comparison == "O vs Y") %>% 
   arrange(NES) %>% 
-  pull(Pathway)[cite: 5]
+  pull(Pathway)
 
 plot_data <- plot_data %>%
-  mutate(Pathway = factor(Pathway, levels = pathway_order))[cite: 5]
+  mutate(Pathway = factor(Pathway, levels = pathway_order))
  
 # 3. High-Dimensional GSEA Bubble Matrix Visualization 
 p_combined <- ggplot(plot_data, aes(x = Comparison, y = Pathway)) +
   # Map geometric point size to statistical confidence and fill color to directional enrichment (NES)
-  geom_point(aes(size = Neg_Log_FDR, color = NES)) +[cite: 5]
+  geom_point(aes(size = Neg_Log_FDR, color = NES)) +
 # Classic diverging palette: Red (Activated/Upregulated), Blue (Suppressed/Downregulated)
 scale_color_gradient2(
   low = "#3498DB", mid = "white", high = "#E74C3C", midpoint = 0,
   name = "NES"
-) +[cite: 5]
+) +
 scale_size_continuous(
   name = expression(-log[10](FDR)),
   range = c(2, 8)
-) +[cite: 5]
+) +
 theme_bw() +
   theme(
     panel.grid.major = element_line(color = "grey90", linetype = "dashed"),
@@ -76,11 +76,11 @@ theme_bw() +
     legend.position = "right",
     legend.title = element_text(face = "bold"),
     plot.title = element_text(hjust = 0.5, face = "bold", size = 14)
-  ) +[cite: 5]
+  ) +
 labs(title = "HALLMARK pathways shift across interventions")[cite: 3, 5]
 
 # Render plot to graphic device
-print(p_combined)[cite: 5]
+print(p_combined)
 
 # Save publication-grade vector PDF
 # ggsave("Fig_Bone_GSEA_Combined_Shift.pdf", plot = p_combined, width = 7, height = 10, dpi = 300)
