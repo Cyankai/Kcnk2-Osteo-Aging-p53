@@ -23,7 +23,7 @@ Re-analyzes a public Sp7 conditional knockout (cKO) dataset. Uses anchor-based l
  * **07_p53_scTenifoldKnk.R**
 Employs the scTenifoldKnk machine learning framework to execute an in silico virtual knockout of Trp53 within the aged IMC. Quantifies the structural shifts in the Gene Regulatory Network (GRN).
  * **08_HALL_Combined.R**
-Integrates transcriptomic signatures across human and murine exercise cohorts, identifying evolutionarily conserved targeted pathways via four-quadrant concordance analysis.
+Harmonizes and visualizes MSigDB Hallmark pathway enrichment shifts across physiological aging (Old vs. Young), physical intervention (Exercise vs. Old), and pharmacological rescue (TRPV4 agonist GSK1016790A vs. Vehicle) in bone and brain transcriptomes. Generates high-dimensional dotplot matrices mapping normalized enrichment scores (NES) and statistical significance (−log10FDR).
 * **09_p53_Regulatory_Enrichment.R**
 Evaluates the lineage-specific recruitment and direct regulatory occupancy of p53 across the osteogenic trajectory. Performs genome-wide hypergeometric enrichment testing across differentiation stages (OB, IMC, Ot) and visualizes stage-selective promoter targeting via lineage-resolved lollipop and enrichment column plots.
 
