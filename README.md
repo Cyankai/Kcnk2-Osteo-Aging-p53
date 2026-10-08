@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23007500.svg)](https://doi.org/10.5281/zenodo.23007500)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23228623.svg)](https://doi.org/10.5281/zenodo.23228623)
 
 This repository contains the **core computational pipelines and customized scripts** used for the downstream analysis in the manuscript:  *Activating TRPV4 in Kcnk2⁺ osteocytes dismantles p53-driven pathogenic secretome to rejuvenate the aging osteo-brain axis*
 
